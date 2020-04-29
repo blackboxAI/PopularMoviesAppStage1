@@ -1,5 +1,6 @@
 package com.demo.theasoft.popularmoviesappstage1;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -36,12 +37,13 @@ public class MainActivity extends AppCompatActivity implements MovieListAdapter.
 
     private static List<Movies> moviesList = new ArrayList<Movies>();
 
-    private RecyclerView recyclerView;
+    private static RecyclerView recyclerView;
     private static MovieListAdapter movieListAdapter;
     private static final String popularStr = "popular";
     private static final String topRatedStr = "top_rated";
     private static ProgressBar mLoadingIndicator;
     private static TextView mErrorTextview;
+
 
 
     @Override
@@ -79,7 +81,10 @@ public class MainActivity extends AppCompatActivity implements MovieListAdapter.
 
 
     private void loadMoviesData(String search_query) {
-        new FetchMoviesTask().execute(search_query);
+        if(moviesList != null){
+            moviesList.clear();
+        }
+        new FetchMoviesTask(this).execute(search_query);
     }
 
     @Override
@@ -97,15 +102,21 @@ public class MainActivity extends AppCompatActivity implements MovieListAdapter.
         switch (id){
 
             case R.id.popular_movies:
-                moviesList.clear();
+                if(moviesList != null){
+                    moviesList.clear();
+                }
                 loadMoviesData(popularStr);
                 return true;
             case R.id.top_rated:
-                moviesList.clear();
+                if(moviesList != null){
+                    moviesList.clear();
+                }
                 loadMoviesData(topRatedStr);
                 return true;
             case R.id.menu_refresh:
-                moviesList.clear();
+                if(moviesList != null){
+                    moviesList.clear();
+                }
                 loadMoviesData(popularStr);
                 return true;
             default:
@@ -123,19 +134,23 @@ public class MainActivity extends AppCompatActivity implements MovieListAdapter.
 
         intent.putExtra("movieObj",m);
 
-//        Gson gson = new Gson();
-//        String movie = gson.toJson(m);
-//        Log.d(TAG,movie);
-//
-//        intent.putExtra("movieObj",movie);
-
         if(intent.resolveActivity(getPackageManager()) != null){
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(intent);
         }
     }
 
 
+
+
     private static class FetchMoviesTask extends AsyncTask<String,Void,JSONArray>{
+
+        private Context mContext;
+
+        public FetchMoviesTask(Context context) {
+            mContext = context;
+        }
 
         @Override
         protected void onPreExecute() {
@@ -154,12 +169,20 @@ public class MainActivity extends AppCompatActivity implements MovieListAdapter.
             String query = params[0];
             URL url = NetworkUtils.buildUrl(query);
             try {
-                String response =  NetworkUtils.getResponseFromHttpUrl(url);
-                if(response == null){
-                    return new JSONArray();
+                String ns = NetworkUtils.getNetworkConnectivityStatus(mContext);
+                Log.d(TAG,ns);
+                if(ns.equals("WIFI_ENABLED") || ns.equals("MOBILE_DATA_ENABLED")) {
+                    String response = NetworkUtils.getResponseFromHttpUrl(url);
+                    Log.d(TAG, response);
+                    if (response == null) {
+                        return null;
+                    }
+                    JSONArray jsonArray = MoviesJSONUtils.getMoviesJSONArray(response);
+                    return jsonArray;
                 }
-                JSONArray jsonArray = MoviesJSONUtils.getMoviesJSONArray(response);
-                return jsonArray;
+                else{
+                    return null;
+                }
 
 
             } catch (IOException | JSONException e) {
@@ -186,21 +209,16 @@ public class MainActivity extends AppCompatActivity implements MovieListAdapter.
                     }
                     String s = res.toString();
                     Movies movies = gson.fromJson(s, Movies.class);
-                    //                Log.d(TAG,movies.getPoster_path());
-
-                    //                URL url = NetworkUtils.buildMoviePosterURL(movies.getPoster_path());
-                    //                Log.d(TAG,movies.getPoster_path());
-                    //                Log.d(TAG,url.toString());
-
-                    //                moviePaths.add(url.toString());
                     moviesList.add(movies);
 
                 }
 
 //            movieListAdapter.setMoviePaths(moviePaths);
                 movieListAdapter.setMovieList(moviesList);
+                recyclerView.setAdapter(movieListAdapter);
             }else{
                 Log.d(TAG,"error");
+                recyclerView.setAdapter(null);
                 mErrorTextview.setVisibility(View.VISIBLE);
                 mErrorTextview.setText(R.string.error_display);
             }

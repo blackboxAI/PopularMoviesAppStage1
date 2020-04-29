@@ -1,8 +1,10 @@
 package com.demo.theasoft.popularmoviesappstage1.utilities;
 
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.util.Log;
-
 
 import com.demo.theasoft.popularmoviesappstage1.Constants.Constant;
 
@@ -71,8 +73,28 @@ public class NetworkUtils {
 
     }
 
+    public static String getNetworkConnectivityStatus(Context context){
+        String status = null;
+        ConnectivityManager cm = (ConnectivityManager)           context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        if (activeNetwork != null) {
+            if (activeNetwork.getType() == ConnectivityManager.TYPE_WIFI) {
+                status = "WIFI_ENABLED";
+                return status;
+            } else if (activeNetwork.getType() == ConnectivityManager.TYPE_MOBILE) {
+                status = "MOBILE_DATA_ENABLED";
+                return status;
+            }
+        } else {
+            status = "NO_INTERNET";
+            return status;
+        }
+        return status;
+    }
+
     public static String getResponseFromHttpUrl(URL url) throws IOException {
         HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+        Log.d(TAG,String.valueOf(urlConnection.getResponseCode()));
         if(urlConnection.getResponseCode() == HttpURLConnection.HTTP_OK) {
             try {
                 InputStream in = urlConnection.getInputStream();

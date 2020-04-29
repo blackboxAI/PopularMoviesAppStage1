@@ -2,6 +2,7 @@ package com.demo.theasoft.popularmoviesappstage1.Adapters;
 
 import android.content.Context;
 import android.net.Uri;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -73,6 +74,7 @@ public class MovieListAdapter extends RecyclerView.Adapter<MovieListAdapter.Movi
 //        Log.d(TAG,String.valueOf(mMoviePaths.size()));
 //        if(mMoviePaths.size()==0) return 0;
 //        return mMoviePaths.size();
+        Log.d(TAG,String.valueOf(mMoviesList.size()));
         if(mMoviesList.size() == 0) return 0;
         return mMoviesList.size();
     }
