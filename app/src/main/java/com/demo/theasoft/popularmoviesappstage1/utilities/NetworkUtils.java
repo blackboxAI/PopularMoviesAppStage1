@@ -3,6 +3,7 @@ package com.demo.theasoft.popularmoviesappstage1.utilities;
 import android.net.Uri;
 import android.util.Log;
 
+
 import com.demo.theasoft.popularmoviesappstage1.Constants.Constant;
 
 import java.io.IOException;

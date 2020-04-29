@@ -6,6 +6,8 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.ProgressBar;
 
 import com.demo.theasoft.popularmoviesappstage1.Adapters.MovieListAdapter;
 import com.demo.theasoft.popularmoviesappstage1.models.Movies;
@@ -31,12 +33,13 @@ public class MainActivity extends AppCompatActivity implements MovieListAdapter.
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
-    private List<Movies> moviesList = new ArrayList<Movies>();
+    private static List<Movies> moviesList = new ArrayList<Movies>();
 
     private RecyclerView recyclerView;
-    private MovieListAdapter movieListAdapter;
+    private static MovieListAdapter movieListAdapter;
     private static final String popularStr = "popular";
     private static final String topRatedStr = "top_rated";
+    private static ProgressBar mLoadingIndicator;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,6 +47,7 @@ public class MainActivity extends AppCompatActivity implements MovieListAdapter.
         setContentView(R.layout.activity_main);
 
         recyclerView = (RecyclerView)findViewById(R.id.main_recycler_view);
+        mLoadingIndicator = (ProgressBar)findViewById(R.id.pb_loading_indicator);
 
         GridLayoutManager gridLayoutManager = new GridLayoutManager(this,2,GridLayoutManager.VERTICAL,false);
 //        LinearLayoutManager layoutManager
@@ -106,12 +110,13 @@ public class MainActivity extends AppCompatActivity implements MovieListAdapter.
         Movies m = moviesList.get(itemIndex);
 
 
+        intent.putExtra("movieObj",m);
 
-        Gson gson = new Gson();
-        String movie = gson.toJson(m);
-        Log.d(TAG,movie);
-
-        intent.putExtra("movieObj",movie);
+//        Gson gson = new Gson();
+//        String movie = gson.toJson(m);
+//        Log.d(TAG,movie);
+//
+//        intent.putExtra("movieObj",movie);
 
         if(intent.resolveActivity(getPackageManager()) != null){
             startActivity(intent);
@@ -119,13 +124,21 @@ public class MainActivity extends AppCompatActivity implements MovieListAdapter.
     }
 
 
-    private class FetchMoviesTask extends AsyncTask<String,Void,JSONArray>{
+    private static class FetchMoviesTask extends AsyncTask<String,Void,JSONArray>{
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            mLoadingIndicator.setVisibility(View.VISIBLE);
+        }
+
         @Override
         protected JSONArray doInBackground(String... params) {
 
             if(params.length == 0){
                 return null;
             }
+
 
             String query = params[0];
             URL url = NetworkUtils.buildUrl(query);
@@ -148,6 +161,7 @@ public class MainActivity extends AppCompatActivity implements MovieListAdapter.
 
         @Override
         protected void onPostExecute(JSONArray jsonArray) {
+            mLoadingIndicator.setVisibility(View.INVISIBLE);
 
             Gson gson = new Gson();
             for(int i=0;i<jsonArray.length();i++){

@@ -1,9 +1,24 @@
 package com.demo.theasoft.popularmoviesappstage1.models;
 
-import java.io.Serializable;
+import android.os.Parcel;
+import android.os.Parcelable;
+
+import java.util.ArrayList;
 import java.util.List;
 
-public class Movies implements Serializable {
+public class Movies implements Parcelable {
+
+    public static final Parcelable.Creator CREATOR = new Parcelable.Creator() {
+        public Movies createFromParcel(Parcel in) {
+            return new Movies(in);
+        }
+
+        public Movies[] newArray(int size) {
+            return new Movies[size];
+        }
+    };
+
+
 
     private String popularity;
     private String vote_count;
@@ -14,11 +29,28 @@ public class Movies implements Serializable {
     private String backdrop_path;
     private String original_language;
     private String original_title;
-    private List<Integer> genre_ids;
+    private List<Integer> genre_ids = new ArrayList<Integer>();
     private String title;
     private String vote_average;
     private String overview;
     private String release_date;
+
+    public Movies(Parcel in){
+        this.popularity = in.readString();
+        this.vote_count = in.readString();
+        this.video = in.readString();
+        this.poster_path = in.readString();
+        this.id = in.readString();
+        this.adult = in.readString();
+        this.backdrop_path = in.readString();
+        this.original_language = in.readString();
+        this.original_title = in.readString();
+        in.readList(this.genre_ids,Movies.class.getClassLoader());
+        this.title = in.readString();
+        this.vote_average = in.readString();
+        this.overview = in.readString();
+        this.release_date = in.readString();
+    }
 
     public String getPopularity() {
         return popularity;
@@ -130,5 +162,30 @@ public class Movies implements Serializable {
 
     public void setRelease_date(String release_date) {
         this.release_date = release_date;
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+
+        dest.writeString(this.popularity);
+        dest.writeString(this.vote_count);
+        dest.writeString(this.video);
+        dest.writeString(this.poster_path);
+        dest.writeString(this.id);
+        dest.writeString(this.adult);
+        dest.writeString(this.backdrop_path);
+        dest.writeString(this.original_language);
+        dest.writeString(this.original_title);
+        dest.writeList(this.genre_ids);
+        dest.writeString(this.title);
+        dest.writeString(this.vote_average);
+        dest.writeString(this.overview);
+        dest.writeString(this.release_date);
+
     }
 }

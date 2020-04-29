@@ -9,7 +9,6 @@ import android.widget.TextView;
 
 import com.demo.theasoft.popularmoviesappstage1.models.Movies;
 import com.demo.theasoft.popularmoviesappstage1.utilities.NetworkUtils;
-import com.google.gson.Gson;
 import com.squareup.picasso.Picasso;
 
 import java.net.URL;
@@ -40,9 +39,10 @@ public class MovieDetailActivity extends AppCompatActivity {
 
 
         Intent intent = getIntent();
-        Gson gson = new Gson();
-
-        Movies m = gson.fromJson(intent.getStringExtra("movieObj"),Movies.class);
+//        Gson gson = new Gson();
+//
+//        Movies m = gson.fromJson(intent.getStringExtra("movieObj"),Movies.class);
+        Movies m = intent.getExtras().getParcelable("movieObj");
 
         Log.d(TAG,m.getOriginal_title());
         Log.d(TAG,m.getPoster_path());
