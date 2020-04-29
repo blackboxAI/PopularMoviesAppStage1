@@ -8,6 +8,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import com.demo.theasoft.popularmoviesappstage1.Adapters.MovieListAdapter;
 import com.demo.theasoft.popularmoviesappstage1.models.Movies;
@@ -40,6 +41,8 @@ public class MainActivity extends AppCompatActivity implements MovieListAdapter.
     private static final String popularStr = "popular";
     private static final String topRatedStr = "top_rated";
     private static ProgressBar mLoadingIndicator;
+    private static TextView mErrorTextview;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,6 +51,8 @@ public class MainActivity extends AppCompatActivity implements MovieListAdapter.
 
         recyclerView = (RecyclerView)findViewById(R.id.main_recycler_view);
         mLoadingIndicator = (ProgressBar)findViewById(R.id.pb_loading_indicator);
+        mErrorTextview = (TextView)findViewById(R.id.tv_error_display);
+
 
         GridLayoutManager gridLayoutManager = new GridLayoutManager(this,2,GridLayoutManager.VERTICAL,false);
 //        LinearLayoutManager layoutManager
@@ -59,21 +64,21 @@ public class MainActivity extends AppCompatActivity implements MovieListAdapter.
         movieListAdapter = new MovieListAdapter(getApplicationContext(),this);
         recyclerView.setAdapter(movieListAdapter);
 
-        //as soon as activity gets loaded
-        //build URL from base URL
-        //fetch movies
 
         loadMoviesData(popularStr);
 
        // iterateMoviePaths();
 
 
+
+
     }
 
 
 
-    private void loadMoviesData(String search_query) {
 
+
+    private void loadMoviesData(String search_query) {
         new FetchMoviesTask().execute(search_query);
     }
 
@@ -82,6 +87,8 @@ public class MainActivity extends AppCompatActivity implements MovieListAdapter.
         getMenuInflater().inflate(R.menu.menu,menu);
         return true;
     }
+
+
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -96,6 +103,10 @@ public class MainActivity extends AppCompatActivity implements MovieListAdapter.
             case R.id.top_rated:
                 moviesList.clear();
                 loadMoviesData(topRatedStr);
+                return true;
+            case R.id.menu_refresh:
+                moviesList.clear();
+                loadMoviesData(popularStr);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -164,29 +175,35 @@ public class MainActivity extends AppCompatActivity implements MovieListAdapter.
             mLoadingIndicator.setVisibility(View.INVISIBLE);
 
             Gson gson = new Gson();
-            for(int i=0;i<jsonArray.length();i++){
+            if(jsonArray != null) {
+                for (int i = 0; i < jsonArray.length(); i++) {
 
-                JSONObject res = null;
-                try {
-                    res = jsonArray.getJSONObject(i);
-                } catch (JSONException e) {
-                    e.printStackTrace();
+                    JSONObject res = null;
+                    try {
+                        res = jsonArray.getJSONObject(i);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    String s = res.toString();
+                    Movies movies = gson.fromJson(s, Movies.class);
+                    //                Log.d(TAG,movies.getPoster_path());
+
+                    //                URL url = NetworkUtils.buildMoviePosterURL(movies.getPoster_path());
+                    //                Log.d(TAG,movies.getPoster_path());
+                    //                Log.d(TAG,url.toString());
+
+                    //                moviePaths.add(url.toString());
+                    moviesList.add(movies);
+
                 }
-                String s = res.toString();
-                Movies movies = gson.fromJson(s,Movies.class);
-//                Log.d(TAG,movies.getPoster_path());
-
-//                URL url = NetworkUtils.buildMoviePosterURL(movies.getPoster_path());
-//                Log.d(TAG,movies.getPoster_path());
-//                Log.d(TAG,url.toString());
-
-//                moviePaths.add(url.toString());
-                moviesList.add(movies);
-
-            }
 
 //            movieListAdapter.setMoviePaths(moviePaths);
-            movieListAdapter.setMovieList(moviesList);
+                movieListAdapter.setMovieList(moviesList);
+            }else{
+                Log.d(TAG,"error");
+                mErrorTextview.setVisibility(View.VISIBLE);
+                mErrorTextview.setText(R.string.error_display);
+            }
 
 
         }

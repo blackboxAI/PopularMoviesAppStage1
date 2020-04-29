@@ -10,4 +10,8 @@
     <item android:id="@+id/top_rated"
         android:title="@string/action_top_rated"
         />
+
+    <item android:id="@+id/menu_refresh"
+        android:title="refresh"
+        app:showAsAction="never"/>
 </menu>
